@@ -164,8 +164,8 @@ int main(int argc, char** argv){
 	valread= send(new_socket,start,strlen(start), 0);
 	int ret = -1; // keeps track of if there are errors in messages
 	valread = read(new_socket, buffer, 4);
-	char* temp = malloc(sizeof(char)*20);
-	char* num = malloc(sizeof(char)*3);
+	char* temp = malloc(sizeof(char)*20); //freed
+	char* num = malloc(sizeof(char)*3); //freed
 	memcpy(temp, buffer, valread);
 	while(valread < 4){ // if we got a chunk smaller than 4, loop through until we do
 		int myvar = read(new_socket, buffer, 1);
@@ -208,7 +208,7 @@ int main(int argc, char** argv){
 			
 		}else if(ret == -1){ // if we haven't found an error yet
 			int z = 0;
-			char* temp2 = malloc(sizeof(char)*13);
+			char* temp2 = malloc(sizeof(char)*13); //freed
 			while(z < 12){ // checking length takes precedence over content, so check for bars
 				valread = read(new_socket, buffer, 1);
 				if(buffer[0] == '|'){
@@ -233,7 +233,8 @@ int main(int argc, char** argv){
 					}
 					z++;	
 				}	
-			}			
+			}
+			free(temp2);			
 		}
 	
 	}else if(strcmp(temp, "ERR|")==0){ // code to print error message if we were sent one, assumes error is formatted right
@@ -256,25 +257,26 @@ int main(int argc, char** argv){
 	}
 
 	if(ret == 1){  //format
-		setup = "ERR|4|M1FT|";
+		setup = "ERR|M1FT|";
 		printf("The client sent us a message with the following error: %s\n\n", setup);
 	}else if(ret == 2){ //length
-		setup = "ERR|4|M1LN|";
+		setup = "ERR|M1LN|";
 		printf("The client sent us a message with the following error: %s\n\n", setup);
 	}else if(ret == 3){ //content
-		setup = "ERR|4|M1CT|";
+		setup = "ERR|M1CT|";
 		printf("The client sent us a message with the following error: %s\n\n", setup);
 	}else{
 		printf("M1 was correctly formatted.\n");
 	}
 	free(temp);
+	free(num);
 	valread=send(new_socket,setup,strlen(setup), 0);
 	if(ret != -1){ // we recieved a message that was wrong, close the connection
 		close(new_socket);
 		continue;
 	}
 	valread = read(new_socket, buffer, 4);
-	char* tem = malloc(sizeof(char)*20);
+	char* tem = malloc(sizeof(char)*20);//freed
 	memcpy(tem, buffer, valread);
 	while(valread < 4){ // if we didn't get 4 bytes (message code + |) in one, keep reading until we have
 		int myvar = read(new_socket, buffer, 1);
@@ -297,7 +299,7 @@ int main(int argc, char** argv){
 		digits_in_length = 1;
 		the_setup_length = 4;
 	}
-	char* temp2 = malloc(sizeof(char)*(digits_in_length+1));// will store length field from message
+	char* temp2 = malloc(sizeof(char)*(digits_in_length+1));// will store length field from message freed
 	if(strcmp(tem, "REG|")==0){
 		k=0;
 		while(k < digits_in_length){ 
@@ -380,24 +382,26 @@ int main(int argc, char** argv){
 		ret = 1;
 	}
 	if(ret == 1){ // format
-		punchline = "ERR|4|M3FT|";
+		punchline = "ERR|M3FT|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else if(ret == 2){ //length
-		punchline = "ERR|4|M3LN|";
+		punchline = "ERR|M3LN|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else if(ret == 3){ //content
-		punchline = "ERR|4|M3CT|";
+		punchline = "ERR|M3CT|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else{
 		printf("M3 was formatted correctly.\n");
 	}
+	free(tem);
+	free(temp2);
 	valread=send(new_socket,punchline,strlen(punchline), 0);
 	if(ret != -1){ // we were sent a bad message, close the connection
 		close(new_socket);
 		continue;
 	}	
 	valread = read(new_socket, buffer, 4);
-	char* type = malloc(sizeof(char)*20);
+	char* type = malloc(sizeof(char)*20); //freed
 	memcpy(type, buffer, valread);
 	while(valread < 4){
 		int myvar = read(new_socket, buffer, 1);
@@ -409,7 +413,7 @@ int main(int argc, char** argv){
 	int expression_digits=0; // the A/D/S can have a completely variable length, unlike other messages
 	if(strcmp(type, "REG|")==0){	
 		read(new_socket, buffer, 1);
-		char* len_size = malloc(sizeof(char)*13);
+		char* len_size = malloc(sizeof(char)*13); //freed
 		while(buffer[0]!='|'){ // read until | to find number of digits in expression length
 			if(!(isdigit(buffer[0])) || expression_digits > 12){  // if the length is greater than 12, i.e 1000000000000 or greater, give formatting error
 				ret = 1;
@@ -473,14 +477,15 @@ int main(int argc, char** argv){
 	}else{ // beginning did not have REG| or ERR|
 		ret = 1;
 	}
+	free(type);
 	if(ret == 1){
-		punchline = "ERR|4|M5FT|";
+		punchline = "ERR|M5FT|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else if(ret == 2){
-		punchline = "ERR|4|M5LN|";
+		punchline = "ERR|M5LN|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else if(ret == 3){
-		punchline = "ERR|4|M5CT|";
+		punchline = "ERR|M5CT|";
 		printf("The client sent us a message with the following error: %s\n\n", punchline);
 	}else{// else, format was right! we can exit now.
 		printf("M5 was formatted correctly. Closing connection.\n\n");

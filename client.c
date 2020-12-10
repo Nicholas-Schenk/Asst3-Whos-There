@@ -8,7 +8,7 @@ int main(int argc, char ** argv){
 	int sock, valread;
 	struct sockaddr_in serv_addr;
 	char * start = "REG|12|Who's there?|";
-	char * response = "REG|14|Djikstra, who?|";
+	char * response = "REG|9|Who, who?|";
 	char* disgust = "REG|4|Ugh.|";
 	char buffer[1024] = {};
 	if((sock = socket(AF_INET, SOCK_STREAM, 0))<0){
@@ -31,9 +31,17 @@ int main(int argc, char ** argv){
 	
 	read(sock, buffer, 1024);
 	printf("%s\n", buffer);
+	//start = "REG|||";
 	send(sock, start, strlen(start), 0);
 	valread = read(sock, buffer, 1024);
+	buffer[valread] = '\0';
+	printf("%s\n", buffer);
+	// All this commented out code makes is respond correctly to variable jokes, i.e when we want to send the right response to whatever joke the server tells. It makes it much harder to test the servers error handling ability however.
+	/*if(valread <= 0){
+		return 0;
+	}
 	buffer[valread] = '\0';	
+	printf("%s\n", buffer);
 	char *temp_setup = malloc(sizeof(char)*(strlen(buffer)+7));
 	strcpy(temp_setup, "REG|");
 	int the_length = strlen(buffer)-7+5;
@@ -45,6 +53,7 @@ int main(int argc, char ** argv){
 	
 	char* temp_length = malloc(sizeof(char)*5);
 	sprintf(temp_length, "%d", the_length);
+	//strcat(temp_setup, "TEN");
 	strcat(temp_setup, temp_length);
 	strcat(temp_setup, "|");
 	char* mytemp = malloc(sizeof(char)*the_length);
@@ -54,16 +63,25 @@ int main(int argc, char ** argv){
 		memcpy(mytemp, &buffer[6], the_length-6);
 	}
 	strcat(temp_setup, mytemp);
+	//strcat(temp_setup, mytemp);
 	strcat(temp_setup, ", who?|");
 	//printf("%s\n", temp_setup);
-	printf("%s\n", buffer);
+	//i
+	//printf("%s\n", buffer);
 	response = temp_setup;
+	//response = "ERR|M2CT|";
+	//printf("RESPONSE: %s\n", response);
+	*/
 	send(sock, response, strlen(response), 0);
 	valread = read(sock, buffer, 1024);
 	buffer[valread] = '\0';
 	printf("%s\n", buffer);
 	send(sock, disgust, strlen(disgust), 0);
-	//read(sock, buffer, 1024);
+	valread = read(sock, buffer, 1024);
+	if(valread>0){
+		buffer[valread] = '\0';
+		printf("%s\n", buffer);
+	}
 	close(sock);
 
 	return 0;	
