@@ -371,10 +371,10 @@ int main(int argc, char** argv){
 			if(buffer[0]=='|'){
 				barcount++;
 			}
-			strcat(temp, buffer);
+			strcat(tem, buffer);
 			s++;
 		}
-		printf("Received the error message: %s from the client when we sent them: %s\n\n", temp, setup);
+		printf("Received the error message: %s from the client when we sent them: %s\n\n", tem, setup);
 		close(new_socket);
 		continue;
 	}else{
