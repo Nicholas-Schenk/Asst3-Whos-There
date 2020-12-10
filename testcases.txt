@@ -1,1 +1,39 @@
 Testcases:
+
+Essentially, for each message that the server should receive we cam up with around 10 tests for each message. Among the cases there are some tests that are essentially the same but just on different messages so they will be mentioned under the same testcase. If a testcase only applies to some of the messages it will be noted. The testcase is just an example while the note next to it says what exactly the test case entails.
+
+1) REG|12|Who's there?| -- Correctly Formatted Message
+    - Results in us sending the next message if applicable
+    
+2) ERR|M0CT| -- The client sends us an error message
+    - Client sent us an error message. We should print it to standard out, along with some info and then close the connection with the client
+    - shouldn't realistically happen unless client is programmed wrong
+    
+3) Who's there? -- Message without code (REG or ERR)
+    -Results in formatting error because we immediately see that the message does not being with either ERR or REG
+    
+4) REG12|Who's there| -- Message has the wrong number of | characters
+    - Results in formatting error as we do not have correct amount of |'s in the message
+
+5) REG|4|Who's there?| --  Message where the length is wrong
+    - This specific case only occurs in either message 1 or message 3 because we know for both the exact length they should be based on the joke.
+    - This specific case represents when we know what the length field should be and it is not that
+    - Results in length error because length was wrong. This case also would include something like REG|123|Who's there?| 
+    
+6) REG|12|Who is there?| and REG|12|Who?| -- General length case where we were sent too few or too many bytes.
+    - In this case, the length is either what we expect(if it is message 1 or 3) and/or doesn't contain an error (message 5) BUT the user has sent us either too few or too many bytes based on the length field
+    - This case results in a length error
+
+7) REG|12|who's there.| -- Message content is wrong.
+    - In this case, we should return a message content error
+    - Note that this error is always checked for last
+    - includes case where message 5 is missing punctuation, message 3 has either setup part or ending part wrong, and any message content error in message 1
+    
+8) REG||| -- no length field/ no message
+    - Results in a formatting error
+    
+9) REG|NINE|Who's who?| -- length field contains non numeric characters
+    - Formatting error, length field can only contain numbers. 
+
+10) Combinations
+    - These were any testcases with multiple potential errors to return. We made sure that our code generally finds formatting errors first, then length errors, then content errors
